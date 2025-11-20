@@ -9,7 +9,7 @@ import * as THREE from 'three';
 
 import { getTerrainHeight, isTreeAt } from './utils';
 
-const Scene: React.FC = () => {
+const Scene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
   const { terrainVoxels, waterVoxels, treeVoxels } = useMemo(() => {
     const tVoxels: VoxelData[] = [];
     const wVoxels: VoxelData[] = [];
@@ -120,7 +120,7 @@ const Scene: React.FC = () => {
       {/* Controls */}
       <OrbitControls
         makeDefault
-        autoRotate
+        autoRotate={isRotating}
         autoRotateSpeed={0.8}
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 2.2}
