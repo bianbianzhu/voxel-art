@@ -110,8 +110,8 @@ const Animals: React.FC = () => {
     { id: 1, type: 'fish', position: [5, 1, 5], target: [8, 1, 8], speed: 1.0, color: 'coral' },
     { id: 2, type: 'bear', position: [-8, 1, -5], target: [-4, 1, 0], speed: 0.8, color: 'brown' },
     { id: 3, type: 'fox', position: [3, 2, -5], target: [2, 2, -2], speed: 1.2, color: 'orange' },
-    { id: 4, type: 'fish', position: [2, 4, 5], target: [8, 1, 8], speed: 0.4, color: 'coral' },
-    { id: 5, type: 'deer', position: [-26, 0, 26], target: [15, 5, 15], speed: 1.0, color: 'brown' },
+    { id: 4, type: 'fish', position: [2, 4, 5], target: [8, 1, 8], speed: 0.6, color: 'coral' },
+    { id: 5, type: 'deer', position: [-12.5, 1, 6], target: [15, 5, 15], speed: 1.0, color: 'brown' },
   ], []);
 
   return (
