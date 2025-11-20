@@ -7,40 +7,24 @@ import Animals from './Animals';
 import { VoxelData } from '../../types';
 import * as THREE from 'three';
 
-// Simple Pseudo-random noise function for consistent terrain generation
-const noise = (x: number, z: number) => {
-  return Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2 + Math.sin(x * 0.3 + z * 0.2);
-};
+import { getTerrainHeight } from './utils';
 
 const Scene: React.FC = () => {
   const { terrainVoxels, waterVoxels, treeVoxels } = useMemo(() => {
     const tVoxels: VoxelData[] = [];
     const wVoxels: VoxelData[] = [];
     const treeV: VoxelData[] = [];
-    
+
     const size = 26; // Slightly larger world radius
 
     for (let x = -size; x <= size; x++) {
       for (let z = -size; z <= size; z++) {
-        // 1. Base Terrain Height Calculation
-        // Mountain shape: higher in center, lower at edges, but carve a river
-        const distance = Math.sqrt(x * x + z * z);
-        let height = Math.max(0, 12 - distance * 0.6); 
-        height += noise(x, z);
+        // Calculate height using shared utility
+        const height = getTerrainHeight(x, z);
 
-        // 2. River Carving
-        // River flows roughly along X=0 with some winding
+        // Recalculate distToRiver for tree placement logic (or move that to utils too, but keeping it here is fine for now)
         const riverPath = Math.sin(z * 0.2) * 3;
         const distToRiver = Math.abs(x - riverPath);
-        
-        if (distToRiver < 2.5) {
-          height = -1; // River bed
-        } else if (distToRiver < 4) {
-           height *= 0.5; // Banks
-        }
-
-        // Round to integer for voxel snap
-        height = Math.floor(height);
 
         // 3. Generate Terrain Columns
         if (height < 0) {
@@ -55,25 +39,25 @@ const Scene: React.FC = () => {
             let type: VoxelData['type'] = 'ground';
 
             if (y === height) {
-               // Top layer logic
-               if (y > 9) {
-                 color = '#F1FAEE'; // Snow cap
-                 type = 'snow';
-               } else if (y > 6) {
-                 color = '#6F5E53'; // High altitude rock
-                 type = 'stone';
-               } else {
-                 // Autumn Grass variation (Warm colors)
-                 const rand = Math.random();
-                 if (rand > 0.7) color = '#D4A373'; // Dry beige grass
-                 else if (rand > 0.4) color = '#588157'; // Muted green
-                 else color = '#A3B18A'; // Pale green
-               }
+              // Top layer logic
+              if (y > 9) {
+                color = '#F1FAEE'; // Snow cap
+                type = 'snow';
+              } else if (y > 6) {
+                color = '#6F5E53'; // High altitude rock
+                type = 'stone';
+              } else {
+                // Autumn Grass variation (Warm colors)
+                const rand = Math.random();
+                if (rand > 0.7) color = '#D4A373'; // Dry beige grass
+                else if (rand > 0.4) color = '#588157'; // Muted green
+                else color = '#A3B18A'; // Pale green
+              }
             } else if (y < height - 2) {
               color = '#4A4036'; // Dirt/Stone deep down
               type = 'stone';
             }
-            
+
             tVoxels.push({ x, y, z, color, type });
           }
 
@@ -83,7 +67,7 @@ const Scene: React.FC = () => {
             // Tree Trunk
             treeV.push({ x, y: height + 1, z, color: '#5D4037', type: 'wood' }); // Darker wood
             treeV.push({ x, y: height + 2, z, color: '#5D4037', type: 'wood' });
-            
+
             // Leaves (Crown) - Vibrant Autumn Palette (Orange, Red, Yellow)
             const treePalette = [
               '#FF2200', // Vivid Red
@@ -94,15 +78,15 @@ const Scene: React.FC = () => {
               '#FF4500'  // Orange Red
             ];
             const baseColor = treePalette[Math.floor(Math.random() * treePalette.length)];
-            
+
             // Simple 3x3x2 crown
-            for(let lx = -1; lx <= 1; lx++) {
-              for(let lz = -1; lz <= 1; lz++) {
-                 for(let ly = 0; ly <= 1; ly++) {
-                    if (Math.abs(lx) + Math.abs(lz) + ly < 3) { // Simple shape trimming
-                       treeV.push({ x: x + lx, y: height + 3 + ly, z: z + lz, color: baseColor, type: 'leaf' });
-                    }
-                 }
+            for (let lx = -1; lx <= 1; lx++) {
+              for (let lz = -1; lz <= 1; lz++) {
+                for (let ly = 0; ly <= 1; ly++) {
+                  if (Math.abs(lx) + Math.abs(lz) + ly < 3) { // Simple shape trimming
+                    treeV.push({ x: x + lx, y: height + 3 + ly, z: z + lz, color: baseColor, type: 'leaf' });
+                  }
+                }
               }
             }
           }
@@ -117,11 +101,11 @@ const Scene: React.FC = () => {
     <>
       {/* Lighting: Enhanced for Brightness */}
       <ambientLight intensity={0.9} color="#fff5e6" />
-      <directionalLight 
-        position={[50, 40, 20]} 
-        intensity={2.0} 
-        color="#FFD700" 
-        castShadow 
+      <directionalLight
+        position={[50, 40, 20]}
+        intensity={2.0}
+        color="#FFD700"
+        castShadow
         shadow-mapSize={[2048, 2048]}
       />
       <hemisphereLight color="#FFD700" groundColor="#b98b73" intensity={0.6} />
@@ -138,12 +122,12 @@ const Scene: React.FC = () => {
       <Animals />
 
       {/* Controls */}
-      <OrbitControls 
-        makeDefault 
-        autoRotate 
-        autoRotateSpeed={0.8} 
-        minPolarAngle={0} 
-        maxPolarAngle={Math.PI / 2.2} 
+      <OrbitControls
+        makeDefault
+        autoRotate
+        autoRotateSpeed={0.8}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2.2}
         maxDistance={60}
       />
     </>
