@@ -7,7 +7,7 @@ import Animals from './Animals';
 import { VoxelData } from '../../types';
 import * as THREE from 'three';
 
-import { getTerrainHeight } from './utils';
+import { getTerrainHeight, isTreeAt } from './utils';
 
 const Scene: React.FC = () => {
   const { terrainVoxels, waterVoxels, treeVoxels } = useMemo(() => {
@@ -21,10 +21,6 @@ const Scene: React.FC = () => {
       for (let z = -size; z <= size; z++) {
         // Calculate height using shared utility
         const height = getTerrainHeight(x, z);
-
-        // Recalculate distToRiver for tree placement logic (or move that to utils too, but keeping it here is fine for now)
-        const riverPath = Math.sin(z * 0.2) * 3;
-        const distToRiver = Math.abs(x - riverPath);
 
         // 3. Generate Terrain Columns
         if (height < 0) {
@@ -62,8 +58,8 @@ const Scene: React.FC = () => {
           }
 
           // 4. Trees
-          // Increased density slightly, colorful palette
-          if (height >= 0 && height < 8 && Math.random() > 0.90 && distToRiver > 3) {
+          // Use shared deterministic logic
+          if (isTreeAt(x, z)) {
             // Tree Trunk
             treeV.push({ x, y: height + 1, z, color: '#5D4037', type: 'wood' }); // Darker wood
             treeV.push({ x, y: height + 2, z, color: '#5D4037', type: 'wood' });

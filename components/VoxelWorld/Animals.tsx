@@ -3,48 +3,58 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { AnimalState } from '../../types';
 
-import { getTerrainHeight } from './utils';
+import { getTerrainHeight, isTreeAt } from './utils';
 
 const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
   const groupRef = useRef<THREE.Group>(null);
   const [position, setPosition] = useState(new THREE.Vector3(...config.position));
   const [target, setTarget] = useState(new THREE.Vector3(...config.target));
 
-  // Simple wander logic
+  // Improved movement logic
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
     const step = config.speed * delta * 2;
     const distance = position.distanceTo(target);
 
-    // Calculate terrain height at current position
-    const terrainHeight = getTerrainHeight(Math.round(position.x), Math.round(position.z));
-    // Target Y should be on top of the block (height + 1 for standing on top)
-    const targetY = Math.max(0, terrainHeight + 1);
+    // 1. Calculate potential next position
+    const direction = new THREE.Vector3(target.x - position.x, 0, target.z - position.z).normalize();
+    const nextX = position.x + direction.x * step;
+    const nextZ = position.z + direction.z * step;
 
-    // Smoothly interpolate Y to avoid snapping
-    position.y += (targetY - position.y) * 0.1;
+    // 2. Check terrain at next position
+    const nextHeight = getTerrainHeight(Math.round(nextX), Math.round(nextZ));
+    const currentHeight = getTerrainHeight(Math.round(position.x), Math.round(position.z));
 
-    if (distance < 0.5) {
-      // Pick new random target within bounds
-      const newTargetX = (Math.random() - 0.5) * 20;
-      const newTargetZ = (Math.random() - 0.5) * 20;
-      // Keep away from water (approximate)
-      if (Math.abs(newTargetX) > 3) {
-        // We don't know the height at the target yet, but we'll find out when we get there
-        // For now, keep target Y same as current or approximate
-        setTarget(new THREE.Vector3(newTargetX, position.y, newTargetZ));
-      }
+    // 3. Validation Checks
+    const heightDiff = Math.abs(nextHeight - currentHeight);
+    const isBlockedByTree = isTreeAt(Math.round(nextX), Math.round(nextZ));
+    const isTooSteep = heightDiff > 1;
+
+    if (distance < 0.5 || isBlockedByTree || isTooSteep) {
+      // Reached target OR Blocked -> Pick new random target
+      const range = 10; // Wander range
+      const newTargetX = position.x + (Math.random() - 0.5) * range;
+      const newTargetZ = position.z + (Math.random() - 0.5) * range;
+
+      // Keep within world bounds (approx)
+      const clampedX = Math.max(-20, Math.min(20, newTargetX));
+      const clampedZ = Math.max(-20, Math.min(20, newTargetZ));
+
+      setTarget(new THREE.Vector3(clampedX, position.y, clampedZ));
     } else {
-      // Move towards target (ignoring Y for direction to keep speed consistent on XZ plane)
-      const direction = new THREE.Vector3(target.x - position.x, 0, target.z - position.z).normalize();
-      position.x += direction.x * step;
-      position.z += direction.z * step;
+      // Move
+      position.x = nextX;
+      position.z = nextZ;
+
+      // Smooth Y transition
+      const targetY = Math.max(0, nextHeight + 1);
+      position.y += (targetY - position.y) * 0.1;
 
       // Look at target
       groupRef.current.lookAt(target.x, position.y, target.z);
 
-      // Simple hop animation
+      // Hop animation
       const hopHeight = Math.sin(state.clock.elapsedTime * 10) * 0.1;
       groupRef.current.position.set(position.x, position.y + Math.max(0, hopHeight), position.z);
     }

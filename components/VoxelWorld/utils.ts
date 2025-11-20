@@ -21,3 +21,24 @@ export const getTerrainHeight = (x: number, z: number) => {
     // Round to integer for voxel snap
     return Math.floor(height);
 };
+
+export const seededRandom = (x: number, z: number) => {
+    const sin = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
+    return sin - Math.floor(sin);
+};
+
+export const isTreeAt = (x: number, z: number) => {
+    const height = getTerrainHeight(x, z);
+
+    // Replicate river logic for distance check
+    const riverPath = Math.sin(z * 0.2) * 3;
+    const distToRiver = Math.abs(x - riverPath);
+
+    // Tree placement logic from Scene.tsx
+    // height >= 0 && height < 8 && Math.random() > 0.90 && distToRiver > 3
+    // We use seededRandom instead of Math.random() for consistency
+    if (height >= 0 && height < 8 && seededRandom(x, z) > 0.90 && distToRiver > 3) {
+        return true;
+    }
+    return false;
+};
