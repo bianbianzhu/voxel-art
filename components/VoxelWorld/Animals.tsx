@@ -111,6 +111,35 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
           </mesh>
         </>
       )
+    } else if (config.type === 'fish') {
+      return (
+        <>
+          {/* Body */}
+          <mesh position={[0, 0.2, 0]}>
+            <boxGeometry args={[0.25, 0.25, 0.5]} />
+            <meshStandardMaterial color="#FF7F50" /> {/* Coral Orange */}
+          </mesh>
+          {/* Tail */}
+          <mesh position={[0, 0.2, -0.35]}>
+            <boxGeometry args={[0.1, 0.2, 0.2]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </mesh>
+          {/* Dorsal Fin */}
+          <mesh position={[0, 0.4, 0]}>
+            <boxGeometry args={[0.05, 0.15, 0.2]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </mesh>
+          {/* Side Fins */}
+          <mesh position={[0.15, 0.15, 0.1]} rotation={[0, 0, 0.5]}>
+            <boxGeometry args={[0.1, 0.05, 0.15]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </mesh>
+          <mesh position={[-0.15, 0.15, 0.1]} rotation={[0, 0, -0.5]}>
+            <boxGeometry args={[0.1, 0.05, 0.15]} />
+            <meshStandardMaterial color="#FFFFFF" />
+          </mesh>
+        </>
+      );
     }
     return (
       <mesh position={[0, 0.4, 0]}>
@@ -134,9 +163,10 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
 
 const Animals: React.FC = () => {
   const animals: AnimalState[] = useMemo(() => [
-    { id: 1, type: 'fox', position: [5, 1, 5], target: [8, 1, 8], speed: 1.5, color: 'orange' },
+    { id: 1, type: 'fish', position: [5, 1, 5], target: [8, 1, 8], speed: 1.0, color: 'coral' },
     { id: 2, type: 'bear', position: [-8, 1, -5], target: [-4, 1, 0], speed: 0.8, color: 'brown' },
     { id: 3, type: 'fox', position: [6, 2, -6], target: [2, 2, -2], speed: 1.2, color: 'orange' },
+    { id: 4, type: 'fish', position: [2, 4, 5], target: [8, 1, 8], speed: 0.4, color: 'coral' },
   ], []);
 
   return (
