@@ -10,7 +10,9 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
   const [position, setPosition] = useState(new THREE.Vector3(...config.position));
   const [target, setTarget] = useState(new THREE.Vector3(...config.target));
 
-  // Improved movement logic
+  const stuckCount = useRef(0);
+
+  // Improved movement logic with Escape Mechanism
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
@@ -32,18 +34,53 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
     const isTooSteep = heightDiff > 1;
 
     if (distance < 0.5 || isBlockedByTree || isTooSteep) {
-      // Reached target OR Blocked -> Pick new random target
-      const range = 10; // Wander range
-      const newTargetX = position.x + (Math.random() - 0.5) * range;
-      const newTargetZ = position.z + (Math.random() - 0.5) * range;
+      // Blocked or Reached Target
+      if (isBlockedByTree || isTooSteep) {
+        stuckCount.current += 1;
+      } else {
+        stuckCount.current = 0; // Reset if we reached target successfully
+      }
 
-      // Keep within world bounds (approx)
-      const clampedX = Math.max(-20, Math.min(20, newTargetX));
-      const clampedZ = Math.max(-20, Math.min(20, newTargetZ));
+      // ESCAPE MECHANISM
+      if (stuckCount.current > 20) {
+        // Try to find a valid escape spot within 5 blocks
+        let escaped = false;
+        for (let i = 0; i < 10; i++) {
+          const escapeX = position.x + (Math.random() - 0.5) * 10; // +/- 5 blocks
+          const escapeZ = position.z + (Math.random() - 0.5) * 10;
 
-      setTarget(new THREE.Vector3(clampedX, position.y, clampedZ));
+          if (!isTreeAt(Math.round(escapeX), Math.round(escapeZ))) {
+            // Found valid spot!
+            const escapeHeight = getTerrainHeight(Math.round(escapeX), Math.round(escapeZ));
+
+            // Teleport/Super Jump
+            position.x = escapeX;
+            position.z = escapeZ;
+            position.y = escapeHeight + 1;
+            setTarget(new THREE.Vector3(escapeX, position.y, escapeZ)); // Stop moving
+            stuckCount.current = 0;
+            escaped = true;
+            break;
+          }
+        }
+        if (!escaped) {
+          // If still can't find spot, just reset stuck count to try normal wander again
+          stuckCount.current = 0;
+        }
+      } else {
+        // Normal Wander: Pick new random target
+        const range = 10;
+        const newTargetX = position.x + (Math.random() - 0.5) * range;
+        const newTargetZ = position.z + (Math.random() - 0.5) * range;
+
+        const clampedX = Math.max(-20, Math.min(20, newTargetX));
+        const clampedZ = Math.max(-20, Math.min(20, newTargetZ));
+
+        setTarget(new THREE.Vector3(clampedX, position.y, clampedZ));
+      }
     } else {
       // Move
+      stuckCount.current = 0; // Reset stuck count on successful move
       position.x = nextX;
       position.z = nextZ;
 
