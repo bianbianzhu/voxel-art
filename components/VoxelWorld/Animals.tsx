@@ -10,9 +10,7 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
   const [position, setPosition] = useState(new THREE.Vector3(...config.position));
   const [target, setTarget] = useState(new THREE.Vector3(...config.target));
 
-  const stuckCount = useRef(0);
-
-  // Improved movement logic with Escape Mechanism
+  // "Stay on Level" movement logic
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
@@ -28,65 +26,49 @@ const Animal: React.FC<{ config: AnimalState }> = ({ config }) => {
     const nextHeight = getTerrainHeight(Math.round(nextX), Math.round(nextZ));
     const currentHeight = getTerrainHeight(Math.round(position.x), Math.round(position.z));
 
-    // 3. Validation Checks
-    const heightDiff = Math.abs(nextHeight - currentHeight);
+    // 3. Validation Checks (Strict: Same Height Only)
+    const isSameHeight = nextHeight === currentHeight;
     const isBlockedByTree = isTreeAt(Math.round(nextX), Math.round(nextZ));
-    const isTooSteep = heightDiff > 1;
 
-    if (distance < 0.5 || isBlockedByTree || isTooSteep) {
-      // Blocked or Reached Target
-      if (isBlockedByTree || isTooSteep) {
-        stuckCount.current += 1;
-      } else {
-        stuckCount.current = 0; // Reset if we reached target successfully
+    if (distance < 0.5 || isBlockedByTree || !isSameHeight) {
+      // Reached target OR Blocked (Tree or Height Change) -> Find new valid direction
+
+      let foundPath = false;
+      // Try up to 10 random directions to find a valid path on the same level
+      for (let i = 0; i < 10; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const lookDist = 2; // Check a bit ahead
+        const testX = position.x + Math.cos(angle) * lookDist;
+        const testZ = position.z + Math.sin(angle) * lookDist;
+
+        const testHeight = getTerrainHeight(Math.round(testX), Math.round(testZ));
+        const testTree = isTreeAt(Math.round(testX), Math.round(testZ));
+
+        if (testHeight === currentHeight && !testTree) {
+          // Found a valid direction! Set a far target in this direction
+          const wanderDist = 10;
+          const newTargetX = position.x + Math.cos(angle) * wanderDist;
+          const newTargetZ = position.z + Math.sin(angle) * wanderDist;
+
+          // Clamp to world bounds
+          const clampedX = Math.max(-20, Math.min(20, newTargetX));
+          const clampedZ = Math.max(-20, Math.min(20, newTargetZ));
+
+          setTarget(new THREE.Vector3(clampedX, position.y, clampedZ));
+          foundPath = true;
+          break;
+        }
       }
 
-      // ESCAPE MECHANISM
-      if (stuckCount.current > 20) {
-        // Try to find a valid escape spot within 5 blocks
-        let escaped = false;
-        for (let i = 0; i < 10; i++) {
-          const escapeX = position.x + (Math.random() - 0.5) * 10; // +/- 5 blocks
-          const escapeZ = position.z + (Math.random() - 0.5) * 10;
+      // If no path found immediately, just wait (do nothing this frame, maybe next frame random seed helps or we just turn in place)
 
-          if (!isTreeAt(Math.round(escapeX), Math.round(escapeZ))) {
-            // Found valid spot!
-            const escapeHeight = getTerrainHeight(Math.round(escapeX), Math.round(escapeZ));
-
-            // Teleport/Super Jump
-            position.x = escapeX;
-            position.z = escapeZ;
-            position.y = escapeHeight + 1;
-            setTarget(new THREE.Vector3(escapeX, position.y, escapeZ)); // Stop moving
-            stuckCount.current = 0;
-            escaped = true;
-            break;
-          }
-        }
-        if (!escaped) {
-          // If still can't find spot, just reset stuck count to try normal wander again
-          stuckCount.current = 0;
-        }
-      } else {
-        // Normal Wander: Pick new random target
-        const range = 10;
-        const newTargetX = position.x + (Math.random() - 0.5) * range;
-        const newTargetZ = position.z + (Math.random() - 0.5) * range;
-
-        const clampedX = Math.max(-20, Math.min(20, newTargetX));
-        const clampedZ = Math.max(-20, Math.min(20, newTargetZ));
-
-        setTarget(new THREE.Vector3(clampedX, position.y, clampedZ));
-      }
     } else {
       // Move
-      stuckCount.current = 0; // Reset stuck count on successful move
       position.x = nextX;
       position.z = nextZ;
 
-      // Smooth Y transition
-      const targetY = Math.max(0, nextHeight + 1);
-      position.y += (targetY - position.y) * 0.1;
+      // Y should be stable (currentHeight + 1), but we can interpolate just in case of floating point drifts
+      position.y += ((currentHeight + 1) - position.y) * 0.1;
 
       // Look at target
       groupRef.current.lookAt(target.x, position.y, target.z);
