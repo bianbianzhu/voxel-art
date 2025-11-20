@@ -11,7 +11,7 @@ export interface AnimalState {
   position: [number, number, number];
   target: [number, number, number];
   speed: number;
-  type: 'fox' | 'bear' | 'deer';
+  type: 'fox' | 'bear' | 'deer' | 'fish';
   color: string;
 }
 
