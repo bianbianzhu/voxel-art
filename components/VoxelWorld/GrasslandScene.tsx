@@ -58,6 +58,17 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
             }
         }
 
+        // Ensure at least 10 cows
+        while (cPositions.length < 10) {
+            const x = Math.floor(Math.random() * (size * 2 + 1)) - size;
+            const z = Math.floor(Math.random() * (size * 2 + 1)) - size;
+            const height = Math.floor(Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2);
+            cPositions.push({
+                position: [x, height + 0.5, z],
+                rotation: [0, Math.random() * Math.PI * 2, 0]
+            });
+        }
+
         return { terrainVoxels: tVoxels, grassPositions: gPositions, cowPositions: cPositions };
     }, []);
 
@@ -75,9 +86,9 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
 
             {/* Sky & Clouds */}
             <Sky sunPosition={[100, 20, 100]} turbidity={0.5} rayleigh={0.5} />
-            <Cloud position={[-10, 15, -10]} opacity={0.5} speed={0.2} bounds={[10, 2, 10]} segments={20} />
-            <Cloud position={[10, 12, 10]} opacity={0.5} speed={0.2} bounds={[10, 2, 10]} segments={20} />
-            <Cloud position={[0, 18, -5]} opacity={0.4} speed={0.1} bounds={[15, 2, 15]} segments={20} />
+            <Cloud position={[-10, 15, -10]} opacity={1} speed={0.2} bounds={[10, 2, 10]} segments={20} color={[255, 255, 255]} />
+            <Cloud position={[10, 12, 10]} opacity={1} speed={0.2} bounds={[10, 2, 10]} segments={20} color={[255, 255, 255]} />
+            <Cloud position={[0, 18, -5]} opacity={1} speed={0.1} bounds={[15, 2, 15]} segments={20} color={[255, 255, 255]} />
 
             {/* World Objects */}
             <AnimatedTerrain voxels={terrainVoxels} />
