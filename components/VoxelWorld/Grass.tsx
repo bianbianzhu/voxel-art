@@ -15,6 +15,11 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
         return new Float32Array(positions.length).map(() => Math.random() * 100);
     }, [positions.length]);
 
+    // Memoize random scales for height variation (max 30% difference)
+    const randomScales = useMemo(() => {
+        return new Float32Array(positions.length).map(() => 0.85 + Math.random() * 0.3);
+    }, [positions.length]);
+
     useLayoutEffect(() => {
         if (!meshRef.current) return;
         const tempObject = new THREE.Object3D();
@@ -23,12 +28,14 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
             tempObject.position.set(pos.x, pos.y, pos.z);
             // Random initial rotation
             tempObject.rotation.y = Math.random() * Math.PI;
+            // Apply random scale
+            tempObject.scale.set(1, randomScales[i], 1);
             tempObject.updateMatrix();
             meshRef.current!.setMatrixAt(i, tempObject.matrix);
         });
 
         meshRef.current.instanceMatrix.needsUpdate = true;
-    }, [positions]);
+    }, [positions, randomScales]);
 
     useFrame(({ clock }) => {
         if (!meshRef.current) return;
@@ -46,6 +53,7 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
         for (let i = 0; i < positions.length; i++) {
             const pos = positions[i];
             const offset = windOffsets[i];
+            const scale = randomScales[i];
 
             // Sync with terrain wave
             const terrainYOffset = getWaveHeight(pos.x, pos.z, time);
@@ -68,6 +76,9 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
             const randomY = (i % 100) / 100 * Math.PI;
             tempObject.rotation.y = randomY;
             tempObject.rotation.z += windAngle; // Bend
+
+            // Apply scale
+            tempObject.scale.set(1, scale, 1);
 
             tempObject.updateMatrix();
             meshRef.current.setMatrixAt(i, tempObject.matrix);
