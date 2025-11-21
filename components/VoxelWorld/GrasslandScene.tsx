@@ -2,14 +2,16 @@ import React, { useMemo } from 'react';
 import { OrbitControls, Environment, Cloud, Sky } from '@react-three/drei';
 import AnimatedTerrain from './AnimatedTerrain';
 import Grass from './Grass';
+import Flowers from './Flowers';
 import { Cow } from './models/Cow';
 import { VoxelData } from '../../types';
 import * as THREE from 'three';
 
 const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
-    const { terrainVoxels, grassPositions, cowPositions } = useMemo(() => {
+    const { terrainVoxels, grassPositions, flowerPositions, cowPositions } = useMemo(() => {
         const tVoxels: VoxelData[] = [];
         const gPositions: { x: number; y: number; z: number }[] = [];
+        const fPositions: { x: number; y: number; z: number }[] = [];
         const cPositions: { position: [number, number, number], rotation: [number, number, number] }[] = [];
 
         const size = 20;
@@ -37,6 +39,18 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
                                     x: x + (Math.random() - 0.5) * 0.95, // Spread out fully
                                     y: y + 0.5, // On top of the block
                                     z: z + (Math.random() - 0.5) * 0.95
+                                });
+                            }
+                        }
+
+                        // Add flowers (random chance)
+                        if (Math.random() < 0.15) { // 15% chance per block
+                            const count = Math.floor(Math.random() * 2) + 1;
+                            for (let i = 0; i < count; i++) {
+                                fPositions.push({
+                                    x: x + (Math.random() - 0.5) * 0.8,
+                                    y: y + 0.5, // On top of the block
+                                    z: z + (Math.random() - 0.5) * 0.8
                                 });
                             }
                         }
@@ -69,7 +83,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
             });
         }
 
-        return { terrainVoxels: tVoxels, grassPositions: gPositions, cowPositions: cPositions };
+        return { terrainVoxels: tVoxels, grassPositions: gPositions, flowerPositions: fPositions, cowPositions: cPositions };
     }, []);
 
     return (
@@ -93,6 +107,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
             {/* World Objects */}
             <AnimatedTerrain voxels={terrainVoxels} />
             <Grass positions={grassPositions} />
+            <Flowers positions={flowerPositions} color="#FFEB3B" />
 
             {/* Cows */}
             {cowPositions.map((cow, index) => (
