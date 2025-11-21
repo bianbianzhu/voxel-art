@@ -53,7 +53,7 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
 
             // Base rotation (y) + Wind sway (x or z)
             // We can just rotate around X or Z to simulate bending
-            const windAngle = Math.sin(time * 2 + pos.x * 0.5 + pos.z * 0.5 + offset) * 0.2;
+            const windAngle = Math.sin(time * 1.0 + pos.x * 0.5 + pos.z * 0.5 + offset) * 0.2;
 
             // We want the grass to bend with the wind.
             // Let's say wind blows along X axis. We rotate around Z.

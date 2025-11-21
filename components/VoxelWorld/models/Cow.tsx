@@ -1,26 +1,29 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { getWaveHeight } from '../utils';
 
 export const Cow: React.FC<{ position: [number, number, number], rotation?: [number, number, number] }> = ({ position, rotation = [0, 0, 0] }) => {
     const headRef = useRef<THREE.Group>(null);
+    const groupRef = useRef<THREE.Group>(null);
 
     useFrame(({ clock }) => {
+        const time = clock.getElapsedTime();
+
         if (headRef.current) {
             // Eating animation: Head goes down and up
-            // Speed: 1.5, Range: 0 to 0.5 radians down
-            const time = clock.getElapsedTime();
-            const angle = Math.sin(time * 2) * 0.4 + 0.4; // Oscillate between ~0 and ~0.8
-            // We want the head to dip down (rotate X positive)
-            // Let's make it pause a bit when down (eating)
-            // A simple sin wave is continuous. Let's clamp it or use a more complex function if needed.
-            // For now, simple sin wave is fine for "eating".
             headRef.current.rotation.x = Math.max(0, Math.sin(time * 3) * 0.6);
+        }
+
+        if (groupRef.current) {
+            // Sync with terrain wave
+            const yOffset = getWaveHeight(position[0], position[2], time);
+            groupRef.current.position.y = position[1] + yOffset;
         }
     });
 
     return (
-        <group position={position} rotation={rotation}>
+        <group ref={groupRef} position={position} rotation={rotation}>
             {/* Body */}
             <mesh position={[0, 0.6, 0]}>
                 <boxGeometry args={[0.6, 0.5, 0.9]} />
