@@ -42,3 +42,7 @@ export const isTreeAt = (x: number, z: number) => {
     }
     return false;
 };
+
+export const getWaveHeight = (x: number, z: number, time: number) => {
+    return Math.sin(time * 2 + x * 0.5 + z * 0.5) * 0.1;
+};
