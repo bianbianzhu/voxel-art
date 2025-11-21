@@ -30,8 +30,8 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
                         // Add grass blades on top
                         // High density grass
                         if (Math.random() > 0.0) { // Always generate
-                            // Add 40-60 blades per block (reduced to 1/4)
-                            const count = Math.floor(Math.random() * 20) + 40;
+                            // Add 80-100 blades per block
+                            const count = Math.floor(Math.random() * 20) + 80;
                             for (let i = 0; i < count; i++) {
                                 gPositions.push({
                                     x: x + (Math.random() - 0.5) * 0.95, // Spread out fully
@@ -44,7 +44,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
                         // Chance for a Cow
                         if (Math.random() < 0.005) {
                             cPositions.push({
-                                position: [x, y + 1, z],
+                                position: [x, y + 0.5, z],
                                 rotation: [0, Math.random() * Math.PI * 2, 0]
                             });
                         }

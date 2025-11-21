@@ -15,9 +15,9 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
         return new Float32Array(positions.length).map(() => Math.random() * 100);
     }, [positions.length]);
 
-    // Memoize random scales for height variation (max 30% difference)
+    // Memoize random scales for height variation (max 50% difference)
     const randomScales = useMemo(() => {
-        return new Float32Array(positions.length).map(() => 0.85 + Math.random() * 0.3);
+        return new Float32Array(positions.length).map(() => 0.85 + Math.random() * 0.5);
     }, [positions.length]);
 
     useLayoutEffect(() => {
