@@ -28,14 +28,15 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
                         color = '#7CB342'; // Lighter green top
 
                         // Add grass blades on top
-                        if (Math.random() > 0.3) {
-                            // Add 1-3 blades per block
-                            const count = Math.floor(Math.random() * 3) + 1;
+                        // High density grass
+                        if (Math.random() > 0.0) { // Always generate
+                            // Add 40-60 blades per block (reduced to 1/4)
+                            const count = Math.floor(Math.random() * 20) + 40;
                             for (let i = 0; i < count; i++) {
                                 gPositions.push({
-                                    x: x + (Math.random() - 0.5) * 0.8,
+                                    x: x + (Math.random() - 0.5) * 0.95, // Spread out fully
                                     y: y + 0.5, // On top of the block
-                                    z: z + (Math.random() - 0.5) * 0.8
+                                    z: z + (Math.random() - 0.5) * 0.95
                                 });
                             }
                         }

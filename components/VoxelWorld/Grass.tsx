@@ -84,7 +84,7 @@ const Grass: React.FC<GrassProps> = ({ positions }) => {
             receiveShadow
         >
             {/* Simple blade shape */}
-            <boxGeometry args={[0.05, 0.4, 0.05]} />
+            <boxGeometry args={[0.05, 0.8, 0.05]} />
             <meshStandardMaterial color="#8BC34A" />
         </instancedMesh>
     );
