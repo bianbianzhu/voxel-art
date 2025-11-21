@@ -71,7 +71,7 @@ const Flowers: React.FC<FlowersProps> = ({ positions, color = '#FFEB3B' }) => {
         const geometries: THREE.BufferGeometry[] = [];
         const petalColor = new THREE.Color(color);
         const stemColor = new THREE.Color('#4CAF50'); // Green
-        const centerColor = new THREE.Color('#3E2723'); // Dark center
+        const centerColor = new THREE.Color('#fff'); // Dark center
 
         // Helper to add color attribute
         const addColor = (geo: THREE.BufferGeometry, c: THREE.Color) => {

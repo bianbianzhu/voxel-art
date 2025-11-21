@@ -44,7 +44,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
                         }
 
                         // Add flowers (random chance)
-                        if (Math.random() < 0.15) { // 15% chance per block
+                        if (Math.random() < 0.10) { // 10% chance per block
                             const count = Math.floor(Math.random() * 2) + 1;
                             for (let i = 0; i < count; i++) {
                                 fPositions.push({
@@ -108,6 +108,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
             <AnimatedTerrain voxels={terrainVoxels} />
             <Grass positions={grassPositions} />
             <Flowers positions={flowerPositions} color="#FFEB3B" />
+            <Flowers positions={flowerPositions} color="#fdcddd" />
 
             {/* Cows */}
             {cowPositions.map((cow, index) => (
