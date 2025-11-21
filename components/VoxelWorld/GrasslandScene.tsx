@@ -6,6 +6,7 @@ import Flowers from './Flowers';
 import { Cow } from './models/Cow';
 import { VoxelData } from '../../types';
 import * as THREE from 'three';
+import { getWaveHeight, getGrasslandHeight } from './utils';
 
 const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
     const { terrainVoxels, grassPositions, flowerPositions, cowPositions } = useMemo(() => {
@@ -19,7 +20,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
         for (let x = -size; x <= size; x++) {
             for (let z = -size; z <= size; z++) {
                 // Rolling hills using sine waves
-                const height = Math.floor(Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2);
+                const height = getGrasslandHeight(x, z);
 
                 // Fill ground
                 for (let y = -3; y <= height; y++) {
@@ -76,7 +77,7 @@ const GrasslandScene: React.FC<{ isRotating: boolean }> = ({ isRotating }) => {
         while (cPositions.length < 10) {
             const x = Math.floor(Math.random() * (size * 2 + 1)) - size;
             const z = Math.floor(Math.random() * (size * 2 + 1)) - size;
-            const height = Math.floor(Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2);
+            const height = getGrasslandHeight(x, z);
             cPositions.push({
                 position: [x, height + 0.5, z],
                 rotation: [0, Math.random() * Math.PI * 2, 0]
